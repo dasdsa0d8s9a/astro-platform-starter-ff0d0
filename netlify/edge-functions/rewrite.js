@@ -1,6 +1,5 @@
 export default async (request, context) => {
-    // Stage 1: Dynamic Key Reconstruction (Instead of simple atob)
-    // Decodes to "Hamid" through hex-to-string conversion
+
     const _s = (h) => h.match(/.{1,2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
     const _k = _s("48616d6964"); 
 
