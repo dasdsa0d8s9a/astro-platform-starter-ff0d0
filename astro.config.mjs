@@ -11,7 +11,7 @@ export default defineConfig({
     integrations: [react()],
     adapter: netlify({
         devFeatures: {
-            environmentVariables: true
+            environmentVariables: false
         }
     })
 });
